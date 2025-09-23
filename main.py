@@ -1,11 +1,8 @@
-# 修正后的代码
 import json
 import requests
-# 将原来的 from astrbot.plugins import on_command 和 from astrbot.sessions import CommandSession
-# 修改为下面这两行
-from astrbot import on_command
-from astrbot import CommandSession
-
+# 修正为新版AstrBot的正确导入路径
+from astrbot.plugin import on_command
+from astrbot.session import CommandSession
 
 # 定义地图数据源的URL为常量，方便后续维护
 MAPS_JSON_URL = "https://maps.kuank.top/maps.json"
@@ -24,8 +21,7 @@ async def search_l4d2_map(session: CommandSession):
     try:
         # 通过requests库获取在线地图数据
         response = requests.get(MAPS_JSON_URL)
-        # 如果请求失败（如404、500等），则会抛出异常
-        response.raise_for_status()
+        response.raise_for_status() # 如果请求失败则抛出异常
         maps_data = response.json()
 
         # 在地图名称中搜索包含查询关键词的地图，不区分大小写
