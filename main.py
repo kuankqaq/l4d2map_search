@@ -1,72 +1,51 @@
-# 最终版 - 基于 NoneBot2 框架
+# 最终修正版 - 严格遵循官方文档
 import json
 import requests
 
-# 核心功能全部从 nonebot 导入，这是正确的路径
-from nonebot import on_command
-from nonebot.adapters import Message
-from nonebot.params import CommandArg
+# 严格按照官方文档的示例，使用正确的导入路径
+from astrbot.core.plugin import on_command
+from astrbot.core.session import CommandSession
 
-# 定义地图数据源的URL
+# 定义地图数据源的URL为常量
 MAPS_JSON_URL = "https://maps.kuank.top/maps.json"
 
-# 使用 on_command 创建一个命令处理器
-l4d2map = on_command("地图", aliases={"map", "l4d2map"}, priority=5, block=True)
-
-# 使用 @<command>.handle() 来定义命令的实际处理逻辑
-@l4d2map.handle()
-async def handle_map_search(args: Message = CommandArg()):
+# 使用官方文档中的 @on_command 装饰器
+@on_command("地图", aliases={'map', 'l4d2map'})
+async def search_l4d2_map(session: CommandSession):
     """
-    处理地图搜索命令
+    根据用户输入的关键词，从指定的JSON数据源中搜索求生之路2地图信息。
     """
-    # 从参数中提取用户输入的文本
-    query = args.extract_plain_text().strip()
-
-    # 如果用户没有输入关键词，提示并结束
+    # 从 session 对象中获取用户输入的参数文本
+    query = session.current_arg_text.strip()
     if not query:
-        await l4d2map.finish("请输入要搜索的地图名称，例如：地图 洞穴之旅")
+        await session.send("请输入要搜索的地图名称，例如：地图 洞穴之旅")
         return
 
     try:
-        # GET 请求获取地图数据
+        # 通过requests库获取在线地图数据
         response = requests.get(MAPS_JSON_URL)
-        response.raise_for_status()
+        response.raise_for_status() # 如果请求失败则抛出异常
         maps_data = response.json()
 
-        # 模糊搜索逻辑（关键词包含）
+        # 在地图名称中搜索包含查询关键词的地图，不区分大小写
         found_maps = [
             a_map for a_map in maps_data
             if query.lower() in a_map.get("name", "").lower()
         ]
 
-        # 未找到结果则提示并结束
+        # 如果未找到任何匹配的地图
         if not found_maps:
-            await l4d2map.finish(f"未找到与“{query}”相关的地图。")
+            await session.send(f"未找到与“{query}”相关的地图。")
             return
 
-        # 格式化回复消息
+        # 格式化并准备发送回复消息
         reply_messages = []
         for a_map in found_maps:
+            # 提取地图信息
             name = a_map.get("name", "未知名称")
             steam_url = a_map.get("steamUrl", "无")
             description = a_map.get("description", "无")
             download_url = a_map.get("downloadUrl")
 
-            message = (
-                f"名称：{name}\n"
-                f"工坊地址：{steam_url}\n"
-            )
-            if download_url:
-                message += f"下载地址：{download_url}\n"
-            message += f"简介：{description}"
-            reply_messages.append(message)
-
-        # 发送最终结果，使用 .send()
-        await l4d2map.send("\n\n---\n\n".join(reply_messages))
-
-    except requests.exceptions.RequestException as e:
-        await l4d2map.finish(f"获取地图数据时发生网络错误：{e}")
-    except json.JSONDecodeError:
-        await l4d2map.finish("无法解析地图数据，数据源可能已损坏。")
-    except Exception as e:
-        await l4d2map.finish(f"处理您的请求时发生未知错误：{e}")
+            # 构建单张地图的回复文本
+            message =
