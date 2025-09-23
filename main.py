@@ -1,7 +1,11 @@
+# 修正后的代码
 import json
 import requests
-from astrbot.plugins import on_command
-from astrbot.sessions import CommandSession
+# 将原来的 from astrbot.plugins import on_command 和 from astrbot.sessions import CommandSession
+# 修改为下面这两行
+from astrbot import on_command
+from astrbot import CommandSession
+
 
 # 定义地图数据源的URL为常量，方便后续维护
 MAPS_JSON_URL = "https://maps.kuank.top/maps.json"
