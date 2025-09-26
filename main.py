@@ -49,18 +49,29 @@ class L4D2MapSearchPlugin(Star):
                 yield event.plain_result(f"未找到与“{query}”相关的地图。")
                 return
 
+            # --- 新增代码：获取当前平台名称 ---
+            platform_name = event.get_platform_name()
+            is_qq_official = (platform_name == "qq_official_webhook")
+
             # 格式化回复消息
             reply_messages = []
             for a_map in found_maps:
                 name = a_map.get("name", "未知名称")
-                steam_url = a_map.get("steamUrl", "无")
                 description = a_map.get("description", "无")
-                download_url = a_map.get("downloadUrl")
 
-                message = f"名称：{name}\n工坊地址：{steam_url}\n"
-                if download_url:
-                    message += f"下载地址：{download_url}\n"
-                message += f"简介：{description}"
+                # --- 修改部分：根据平台判断是否包含URL ---
+                if is_qq_official:
+                    # 如果是QQ官方接口，不显示地址
+                    message = f"名称：{name}\n简介：{description}"
+                else:
+                    # 其他平台，正常显示
+                    steam_url = a_map.get("steamUrl", "无")
+                    download_url = a_map.get("downloadUrl")
+                    message = f"名称：{name}\n工坊地址：{steam_url}\n"
+                    if download_url:
+                        message += f"下载地址：{download_url}\n"
+                    message += f"简介：{description}"
+                
                 reply_messages.append(message)
             
             # 发送最终拼接好的结果
@@ -78,4 +89,5 @@ class L4D2MapSearchPlugin(Star):
 
     async def terminate(self):
         # 插件卸载时，关闭http客户端
-        await self.http_client.aclose()
+        if self.http_client and not self.http_client.is_closed:
+            await self.http_client.aclose()
