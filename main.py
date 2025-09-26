@@ -12,7 +12,7 @@ MAPS_JSON_URL = "https://maps.kuank.top/maps.json"
     "l4d2map_search",  # 插件ID
     "kuank",  # 作者
     "一个可以根据关键词搜索L4D2地图信息的插件",  # 描述
-    "1.0.9",  # 版本
+    "1.1.0",  # 版本
     "https://github.com/kuankqaq/l4d2map_search"  # 仓库地址
 )
 class L4D2MapSearchPlugin(Star):
